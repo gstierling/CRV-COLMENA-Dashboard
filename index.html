@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>COLMENA en CicloRecreoVía</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --navy:#14213d; --navy-2:#1f3160; --honey:#f6a313; --honey-d:#d98806; --honey-l:#fff1d1;
+  --bg:#fdf6e9; --card:#ffffff; --ink:#1d2433; --muted:#5d6577; --line:#ecdcc0;
+  --ok:#1f9d55; --err:#d64545;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'Nunito',system-ui,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98' viewBox='0 0 56 98'%3E%3Cpath d='M28 66L0 50V18L28 2l28 16v32L28 66zm0 32L0 82' fill='none' stroke='%23f6a313' stroke-opacity='.13' stroke-width='2'/%3E%3C/svg%3E");
+}
+.wrap{width:100%;max-width:760px;margin:0 auto;padding:0 14px 40px}
+
+/* Encabezado */
+.hero{background:var(--navy);color:#fff;padding:30px 20px 34px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:8px;background:var(--honey)}
+.hex-logo{width:64px;height:72px;margin:0 auto 12px;background:var(--honey);
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);display:flex;align-items:center;justify-content:center;
+  font-size:32px;font-weight:900;color:var(--navy)}
+.hero h1{font-size:clamp(28px,8vw,42px);font-weight:900;line-height:1.05;letter-spacing:.5px}
+.hero h1 span{color:var(--honey)}
+.hero p{margin-top:10px;font-size:16px;opacity:.85}
+
+/* Tarjetas */
+.card{background:var(--card);border-radius:20px;padding:22px 18px;margin-top:18px;
+  box-shadow:0 6px 24px rgba(20,33,61,.08);border:1px solid var(--line)}
+.intro{font-size:15px;color:var(--muted);line-height:1.5}
+.req{color:var(--err);font-weight:800}
+
+/* Formulario */
+.q{padding:20px 0;border-bottom:1px solid var(--line)}
+.q:last-of-type{border-bottom:none}
+.q label.t{display:block;font-size:19px;font-weight:800;color:var(--navy);line-height:1.3}
+.q .qt{font-size:19px;font-weight:800;color:var(--navy);line-height:1.3}
+.q .num{color:var(--honey-d);margin-right:4px}
+.q .help{font-size:15px;color:var(--muted);margin:6px 0 12px;line-height:1.45}
+.q .help a{color:var(--navy-2);font-weight:700}
+input.in{width:100%;font:inherit;font-size:18px;padding:16px;border:2px solid var(--line);border-radius:14px;
+  background:#fffdf8;color:var(--ink);outline:none;transition:border-color .15s, box-shadow .15s}
+input.in:focus{border-color:var(--honey);box-shadow:0 0 0 4px rgba(246,163,19,.18)}
+input.in::placeholder{color:#a4a9b5}
+.q.bad input.in{border-color:var(--err)}
+.err{display:none;color:var(--err);font-size:14px;font-weight:700;margin-top:8px}
+.q.bad .err{display:block}
+
+.check{display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid var(--line);border-radius:14px;
+  cursor:pointer;background:#fffdf8;user-select:none;-webkit-tap-highlight-color:transparent}
+.check input{position:absolute;opacity:0;pointer-events:none}
+.box{flex:0 0 28px;height:28px;border-radius:8px;border:2px solid #b9bfcc;background:#fff;display:flex;align-items:center;justify-content:center;transition:.15s}
+.box svg{width:18px;height:18px;opacity:0;transition:.15s}
+.check input:checked + .box{background:var(--honey);border-color:var(--honey)}
+.check input:checked + .box svg{opacity:1}
+.check input:focus-visible + .box{box-shadow:0 0 0 4px rgba(246,163,19,.25)}
+.check span.lbl{font-size:17px;font-weight:700}
+.q.bad .check{border-color:var(--err)}
+
+.btn{display:block;width:100%;font:inherit;font-size:20px;font-weight:900;letter-spacing:.5px;padding:18px;border:none;border-radius:16px;
+  cursor:pointer;background:var(--honey);color:var(--navy);box-shadow:0 6px 0 var(--honey-d);transition:transform .08s, box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--honey-d)}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.sec{background:var(--navy);color:#fff;box-shadow:0 6px 0 #0a1428}
+.checks{display:flex;flex-direction:column;gap:10px}
+.sel{position:relative}
+.sel-btn{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;font:inherit;font-size:18px;font-weight:700;text-align:left;
+  padding:16px;border:2px solid var(--line);border-radius:14px;background:#fffdf8;color:var(--ink);cursor:pointer}
+.sel-btn.vacio-sel{color:#a4a9b5;font-weight:400}
+.sel-btn svg{flex:0 0 20px;transition:transform .2s}
+.sel.open .sel-btn{border-color:var(--honey);box-shadow:0 0 0 4px rgba(246,163,19,.18)}
+.sel.open .sel-btn svg{transform:rotate(180deg)}
+.sel-list{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:20;background:#fff;border:2px solid var(--honey);
+  border-radius:14px;box-shadow:0 12px 30px rgba(20,33,61,.15);overflow:hidden;max-height:320px;overflow-y:auto}
+.sel.open .sel-list{display:block}
+.sel-op{display:block;width:100%;font:inherit;font-size:18px;font-weight:700;text-align:left;padding:15px 16px;border:none;
+  border-bottom:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}
+.sel-op:last-child{border-bottom:none}
+.sel-op:hover,.sel-op.on{background:var(--honey-l)}
+.q.bad .sel-btn{border-color:var(--err)}
+.msg-gen{display:none;margin-top:14px;padding:14px;border-radius:12px;background:#fde8e8;color:var(--err);font-weight:700;text-align:center}
+
+/* Éxito */
+#exito{display:none;text-align:center;padding:36px 20px}
+#exito .ok-ic{width:84px;height:94px;margin:0 auto 16px;background:var(--ok);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);display:flex;align-items:center;justify-content:center}
+#exito h2{font-size:28px;font-weight:900;color:var(--navy)}
+#exito p{font-size:17px;color:var(--muted);margin:10px 0 24px;line-height:1.5}
+
+/* Candado de letras */
+.lock{text-align:center}
+.lock h3{font-size:14px;font-weight:800;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:14px}
+.letras{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap}
+.letra{flex:1 1 0;max-width:62px;aspect-ratio:.88;border:none;font:inherit;font-size:clamp(20px,6vw,28px);font-weight:900;cursor:pointer;
+  background:var(--navy);color:#fff;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  transition:background .15s, transform .1s;-webkit-tap-highlight-color:transparent}
+.letra:active{transform:scale(.92)}
+.letra.on{background:var(--ok)}
+.letras.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+.lock-msg{min-height:22px;margin-top:12px;font-size:14px;font-weight:700;color:var(--muted)}
+
+/* Dashboard */
+#dash{display:none}
+.dash-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.dash-head h2{font-size:26px;font-weight:900;color:var(--navy)}
+.upd{font-size:13px;color:var(--muted);font-weight:600}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:14px 0 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;font:inherit;font-size:15px;font-weight:800;padding:10px 16px;border-radius:999px;border:2px solid var(--line);
+  background:#fff;color:var(--navy);cursor:pointer;white-space:nowrap}
+.chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.kpi{border-radius:18px;padding:16px;background:var(--honey-l);border:1px solid var(--line)}
+.kpi.big{grid-column:1/-1;background:var(--navy);color:#fff;border:none;text-align:center;padding:22px 16px}
+.kpi .v{font-size:clamp(28px,9vw,40px);font-weight:900;line-height:1;color:var(--navy)}
+.kpi.big .v{font-size:clamp(56px,20vw,92px);color:var(--honey)}
+.kpi .l{font-size:14px;font-weight:700;color:var(--muted);margin-top:6px}
+.kpi.big .l{color:#fff;opacity:.85;font-size:16px}
+
+.sec-t{font-size:18px;font-weight:900;color:var(--navy);margin:26px 0 12px}
+.chart-box{position:relative;height:240px}
+.bars.acts .row{grid-template-columns:1fr 84px}
+.bars.acts .row .nm-a{grid-column:1/-1;margin-bottom:-4px}
+.bars .row{display:grid;grid-template-columns:70px 1fr 74px;align-items:center;gap:10px;margin-bottom:10px;font-size:15px;font-weight:700}
+.bars .track{height:22px;background:#f3ead8;border-radius:11px;overflow:hidden}
+.bars .fill{height:100%;background:var(--honey);border-radius:11px;transition:width .4s}
+.bars .val{text-align:right;color:var(--navy)}
+.bars .val small{color:var(--muted);font-weight:600}
+
+.buscar{margin-bottom:10px}
+.lista{max-height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:14px}
+.item{display:flex;flex-direction:column;gap:3px;padding:12px 14px;border-bottom:1px solid var(--line);font-size:15px}
+.item:last-child{border-bottom:none}
+.item .nm{font-weight:800}
+.item .meta{color:var(--muted);font-size:13px;font-weight:600}
+.vacio{padding:20px;text-align:center;color:var(--muted);font-weight:700}
+.ocultar{margin-top:24px}
+
+footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hex-logo">C</div>
+  <h1>COLMENA <span>en</span><br>CicloRecreoVía</h1>
+  <p>Registro de participantes</p>
+</header>
+
+<main class="wrap">
+
+  <!-- FORMULARIO -->
+  <section class="card" id="formCard">
+    <p class="intro">Cuando envíes este formulario no se recopilarán automáticamente tus datos, como el nombre y el correo electrónico, a menos que los ingreses tú mismo.</p>
+    <p class="intro" style="margin-top:8px"><span class="req">*</span> Obligatorio</p>
+
+    <form id="form" novalidate>
+      <div class="q" data-f="fecha">
+        <p class="t qt">Fecha de participación <span class="req">*</span></p>
+        <p class="help">Elige el domingo en que vas a participar</p>
+        <div class="sel" id="selFecha">
+          <button type="button" class="sel-btn vacio-sel" id="selBtn"><span id="selTxt">Selecciona una fecha</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#14213d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="sel-list" id="selList"></div>
+        </div>
+        <p class="err">Selecciona la fecha en que vas a participar.</p>
+      </div>
+
+      <div class="q" data-f="actividades">
+        <p class="t qt"><span class="num">1.</span>¿En qué va a participar? <span class="req">*</span></p>
+        <p class="help">Puedes escoger más de una opción</p>
+        <div class="checks" id="actividades"></div>
+        <p class="err">Elige al menos una actividad.</p>
+      </div>
+
+      <div class="q" data-f="nombre">
+        <label class="t" for="nombre"><span class="num">2.</span>Nombre completo <span class="req">*</span></label>
+        <p class="help">Ingresa tu nombre y apellido (Ej. Pedro López)</p>
+        <input class="in" id="nombre" type="text" maxlength="100" autocomplete="name" placeholder="Escribe como máximo 100 caracteres">
+        <p class="err">Ingresa tu nombre y apellido.</p>
+      </div>
+
+      <div class="q" data-f="rut">
+        <label class="t" for="rut"><span class="num">3.</span>RUT <span class="req">*</span></label>
+        <p class="help">Ingresa tu número de RUT sin puntos y con guion (Ej. 12345678-K)</p>
+        <input class="in" id="rut" type="text" maxlength="10" autocomplete="off" autocapitalize="characters" placeholder="12345678-K">
+        <p class="err">RUT inválido. Revisa el número y el dígito verificador.</p>
+      </div>
+
+      <div class="q" data-f="nacimiento">
+        <label class="t" for="nacimiento"><span class="num">4.</span>Fecha de nacimiento <span class="req">*</span></label>
+        <p class="help">Ingresa tu fecha de nacimiento (Ej.: 15/08/1990)</p>
+        <input class="in" id="nacimiento" type="text" inputmode="numeric" maxlength="10" autocomplete="bday" placeholder="dd/mm/aaaa">
+        <p class="err">Ingresa una fecha válida en formato dd/mm/aaaa.</p>
+      </div>
+
+      <div class="q" data-f="correo">
+        <label class="t" for="correo"><span class="num">5.</span>Correo electrónico <span class="req">*</span></label>
+        <p class="help">Ingresa tu correo electrónico de contacto (Ej. pedro.lopez@gmail.com)</p>
+        <input class="in" id="correo" type="email" inputmode="email" autocomplete="email" autocapitalize="none" placeholder="Escribe una dirección de correo electrónico">
+        <p class="err">Ingresa un correo electrónico válido.</p>
+      </div>
+
+      <div class="q" data-f="telefono">
+        <label class="t" for="telefono"><span class="num">6.</span>Teléfono de contacto (opcional)</label>
+        <p class="help">Ingresa tu número telefónico de contacto (Ej. 912345678)</p>
+        <input class="in" id="telefono" type="tel" inputmode="numeric" maxlength="9" autocomplete="tel-national" placeholder="9XXXXXXXX">
+        <p class="err">El número debe tener 9 dígitos y comenzar con 9.</p>
+      </div>
+
+      <div class="q" data-f="bases">
+        <p class="t qt"><span class="num">7.</span>Declaración de lectura y aceptación de las bases de registro y participación en actividades Colmena <span class="req">*</span></p>
+        <p class="help">Conoce las <a id="linkBases" href="#" target="_blank" rel="noopener">bases de registro</a></p>
+        <label class="check">
+          <input type="checkbox" id="bases">
+          <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#14213d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>
+          <span class="lbl">Declaro haber leído y aceptado las bases</span>
+        </label>
+        <p class="err">Debes aceptar las bases para registrarte.</p>
+      </div>
+
+      <div class="q" data-f="datos">
+        <p class="t qt"><span class="num">8.</span>Autorización del tratamiento de mis datos personales <span class="req">*</span></p>
+        <p class="help">Políticas de privacidad: Autorizo a Colmena Golden Cross S.A. a utilizar los datos de contacto proporcionados para enviarme información y comunicaciones relacionadas con sus productos, servicios, beneficios, campañas, novedades y ofertas comerciales, y para contactarme con el objeto de ofrecerme productos o servicios de Colmena.</p>
+        <label class="check">
+          <input type="checkbox" id="datos">
+          <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#14213d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>
+          <span class="lbl">Sí, autorizo</span>
+        </label>
+        <p class="err">Debes autorizar el tratamiento de datos para registrarte.</p>
+      </div>
+
+      <button class="btn" type="submit" id="enviar" style="margin-top:12px">ENVIAR REGISTRO</button>
+      <div class="msg-gen" id="msgGen"></div>
+    </form>
+  </section>
+
+  <!-- ÉXITO -->
+  <section class="card" id="exito">
+    <div class="ok-ic"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>
+    <h2>¡Registro exitoso!</h2>
+    <p>Gracias por participar de COLMENA en CicloRecreoVía.</p>
+    <button class="btn" type="button" id="otro">REGISTRAR A OTRA PERSONA</button>
+  </section>
+
+  <!-- CANDADO -->
+  <section class="card lock">
+    <h3>Acceso dashboard</h3>
+    <div class="letras" id="letras"></div>
+    <p class="lock-msg" id="lockMsg"></p>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="card" id="dash">
+    <div class="dash-head">
+      <h2>Resumen de registros</h2>
+      <span class="upd" id="upd"></span>
+    </div>
+    <div class="chips" id="chips"></div>
+
+    <div class="kpis">
+      <div class="kpi big"><div class="v" id="kTotal">0</div><div class="l">Registros</div></div>
+      <div class="kpi"><div class="v" id="kEdad">–</div><div class="l">Edad promedio</div></div>
+      <div class="kpi"><div class="v" id="kTel">–</div><div class="l">Dejaron teléfono</div></div>
+    </div>
+
+    <p class="sec-t">Participación por actividad</p>
+    <div class="bars acts" id="barsAct"></div>
+
+    <div id="bloqueDia">
+      <p class="sec-t">Registros por fecha de participación</p>
+      <div class="chart-box"><canvas id="chDia"></canvas></div>
+    </div>
+
+    <p class="sec-t">Registros por hora</p>
+    <div class="chart-box"><canvas id="chHora"></canvas></div>
+
+    <p class="sec-t">Rango de edad</p>
+    <div class="bars" id="barsEdad"></div>
+
+    <p class="sec-t">Listado de registrados</p>
+    <input class="in buscar" id="buscar" type="search" placeholder="Buscar por nombre">
+    <div class="lista" id="lista"></div>
+
+    <button class="btn sec ocultar" type="button" id="ocultar">OCULTAR</button>
+  </section>
+
+  <footer>CicloRecreoVía · COLMENA</footer>
+</main>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx1T92FyXTLME7EOXGGNRPsLcqHE3tpO7AuznMnarfe6IwQhhdpyAAPSb1c-RXiBNsc/exec';
+const URL_BASES  = 'https://www.colmena.cl/source/wp-content/uploads/2026/10/Bases-formulario-actividades-Ciclorecreovia.pdf';
+const PALABRA = 'COLMENA';
+const N_DOMINGOS = 8; // próximos domingos que se ofrecen en el selector
+const ACTIVIDADES = ['Entrenamiento funcional','Clases de patines','Enchulamiento de patines','Sorteo'];
+const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#14213d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>';
+
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n).toLocaleString('es-CL');
+
+if (URL_BASES.startsWith('http')) $('linkBases').href = URL_BASES;
+
+/* ================= FORMULARIO ================= */
+const DIAS_L = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const fechaDate = f => { const [d,m,y] = f.split('/').map(Number); return new Date(y,m-1,d); };
+const fechaLarga = f => { const x = fechaDate(f); return DIAS_L[x.getDay()] + ' ' + x.getDate() + ' de ' + MESES_L[x.getMonth()]; };
+let fechaSel = '';
+
+// Selector de fecha: próximos domingos + fechas que ya tienen registros
+const ddmmyyyy = d => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+function proximosDomingos(){
+  const d = new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + (7 - d.getDay()) % 7);   // hoy si es domingo, si no el próximo
+  const out = [];
+  for (let i = 0; i < N_DOMINGOS; i++){ out.push(ddmmyyyy(d)); d.setDate(d.getDate() + 7); }
+  return out;
+}
+function pintarFechas(extra){
+  const lista = [...new Set([...proximosDomingos(), ...(extra || [])])].sort((a,b) => fechaDate(a) - fechaDate(b));
+  $('selList').innerHTML = lista.map(f =>
+    `<button type="button" class="sel-op${f === fechaSel ? ' on' : ''}" data-f="${f}">${fechaLarga(f)}</button>`).join('');
+}
+pintarFechas();
+fetch(SCRIPT_URL + '?accion=fechas&_=' + Date.now()).then(r => r.json())
+  .then(r => { if (r.status === 'ok') pintarFechas(r.fechas); }).catch(() => {});
+
+$('selBtn').addEventListener('click', e => { e.stopPropagation(); $('selFecha').classList.toggle('open'); });
+$('selList').addEventListener('click', e => {
+  const b = e.target.closest('.sel-op'); if (!b) return;
+  fechaSel = b.dataset.f;
+  $('selTxt').textContent = fechaLarga(fechaSel);
+  $('selBtn').classList.remove('vacio-sel');
+  document.querySelectorAll('.sel-op').forEach(o => o.classList.toggle('on', o === b));
+  $('selFecha').classList.remove('open');
+  $('selFecha').closest('.q').classList.remove('bad');
+});
+document.addEventListener('click', () => $('selFecha').classList.remove('open'));
+
+// Actividades (selección múltiple)
+$('actividades').innerHTML = ACTIVIDADES.map((a,i) =>
+  `<label class="check"><input type="checkbox" name="act" value="${a}"><span class="box">${CHECK_SVG}</span><span class="lbl">${a}</span></label>`).join('');
+
+function dvRut(cuerpo){
+  let s = 0, m = 2;
+  for (let i = cuerpo.length - 1; i >= 0; i--){ s += Number(cuerpo[i]) * m; m = m === 7 ? 2 : m + 1; }
+  const r = 11 - (s % 11);
+  return r === 11 ? '0' : r === 10 ? 'K' : String(r);
+}
+function normRut(v){
+  let r = v.replace(/[.\s]/g,'').toUpperCase();
+  if (!r.includes('-') && r.length > 1) r = r.slice(0,-1) + '-' + r.slice(-1);
+  return r;
+}
+function rutOk(r){ const m = /^(\d{7,8})-([\dK])$/.exec(r); return !!m && dvRut(m[1]) === m[2]; }
+
+function parseFecha(t){
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(t);
+  if (!m) return null;
+  const d = new Date(+m[3], +m[2]-1, +m[1]);
+  if (d.getFullYear() !== +m[3] || d.getMonth() !== +m[2]-1 || d.getDate() !== +m[1]) return null;
+  if (d.getFullYear() < 1900 || d > new Date()) return null;
+  return d;
+}
+
+$('rut').addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/[^0-9kK-]/g,'').toUpperCase();
+});
+$('rut').addEventListener('blur', e => { if (e.target.value) e.target.value = normRut(e.target.value); });
+
+$('nacimiento').addEventListener('input', e => {
+  let d = e.target.value.replace(/\D/g,'').slice(0,8);
+  if (d.length > 4) d = d.slice(0,2) + '/' + d.slice(2,4) + '/' + d.slice(4);
+  else if (d.length > 2) d = d.slice(0,2) + '/' + d.slice(2);
+  e.target.value = d;
+});
+$('telefono').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g,'').slice(0,9); });
+
+function marca(campo, ok){ document.querySelector(`.q[data-f="${campo}"]`).classList.toggle('bad', !ok); return ok; }
+document.querySelectorAll('.q input').forEach(i => i.addEventListener('input', () => i.closest('.q').classList.remove('bad')));
+document.querySelectorAll('.q input[type=checkbox]').forEach(i => i.addEventListener('change', () => i.closest('.q').classList.remove('bad')));
+
+$('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('msgGen').style.display = 'none';
+  const nombre = $('nombre').value.trim().replace(/\s+/g,' ');
+  const rut = normRut($('rut').value); $('rut').value = rut;
+  const nac = $('nacimiento').value.trim();
+  const correo = $('correo').value.trim().toLowerCase();
+  const tel = $('telefono').value.trim();
+
+  const acts = [...document.querySelectorAll('input[name=act]:checked')].map(i => i.value);
+  const v = [
+    marca('fecha', !!fechaSel),
+    marca('actividades', acts.length > 0),
+    marca('nombre', nombre.length >= 3),
+    marca('rut', rutOk(rut)),
+    marca('nacimiento', !!parseFecha(nac)),
+    marca('correo', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)),
+    marca('telefono', tel === '' || /^9\d{8}$/.test(tel)),
+    marca('bases', $('bases').checked),
+    marca('datos', $('datos').checked)
+  ];
+  if (v.includes(false)){
+    document.querySelector('.q.bad').scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
+  const btn = $('enviar'); btn.disabled = true; btn.textContent = 'ENVIANDO…';
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({fecha:fechaSel, actividades:acts, nombre, rut, nacimiento:nac, correo, telefono:tel, bases:true, datos:true})
+    });
+    const r = await res.json();
+    if (r.status === 'ok'){
+      $('form').reset();
+      fechaSel = ''; $('selTxt').textContent = 'Selecciona una fecha'; $('selBtn').classList.add('vacio-sel');
+      document.querySelectorAll('.sel-op').forEach(o => o.classList.remove('on'));
+      $('formCard').style.display = 'none';
+      $('exito').style.display = 'block';
+      window.scrollTo({top:0, behavior:'smooth'});
+    } else if (r.status === 'duplicado'){
+      const q = document.querySelector('.q[data-f="rut"]');
+      q.querySelector('.err').textContent = 'Este RUT ya está registrado.';
+      q.classList.add('bad'); q.scrollIntoView({behavior:'smooth', block:'center'});
+    } else {
+      throw new Error(r.msg || 'error');
+    }
+  } catch(err){
+    $('msgGen').textContent = 'No se pudo enviar el registro. Revisa tu conexión e inténtalo nuevamente.';
+    $('msgGen').style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'ENVIAR REGISTRO';
+  }
+});
+$('rut').addEventListener('input', () => {
+  document.querySelector('.q[data-f="rut"] .err').textContent = 'RUT inválido. Revisa el número y el dígito verificador.';
+});
+$('otro').addEventListener('click', () => {
+  $('exito').style.display = 'none';
+  $('formCard').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+/* ================= CANDADO ================= */
+let secuencia = [], clave = null, timer = null;
+PALABRA.split('').forEach(l => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'letra'; b.textContent = l;
+  b.addEventListener('click', () => pulsar(b, l));
+  $('letras').appendChild(b);
+});
+function resetLetras(){
+  secuencia = [];
+  document.querySelectorAll('.letra').forEach(b => b.classList.remove('on'));
+}
+async function pulsar(b, l){
+  if (b.classList.contains('on') || secuencia.length >= PALABRA.length) return;
+  b.classList.add('on'); secuencia.push(l);
+  if (secuencia.length < PALABRA.length) return;
+  const intento = secuencia.join('');
+  $('lockMsg').textContent = 'Verificando…';
+  try {
+    const r = await pedirPanel(intento);
+    if (r.status === 'ok'){
+      clave = intento; $('lockMsg').textContent = '';
+      $('dash').style.display = 'block';
+      render(r);
+      $('dash').scrollIntoView({behavior:'smooth'});
+      clearInterval(timer);
+      timer = setInterval(refrescar, 30000);
+    } else {
+      $('lockMsg').textContent = '';
+      $('letras').classList.add('shake');
+      setTimeout(() => { $('letras').classList.remove('shake'); resetLetras(); }, 450);
+    }
+  } catch(e){
+    $('lockMsg').textContent = 'Sin conexión con el servidor. Intenta nuevamente.';
+    resetLetras();
+  }
+}
+async function pedirPanel(c){
+  const res = await fetch(SCRIPT_URL + '?accion=panel&clave=' + encodeURIComponent(c) + '&_=' + Date.now());
+  return res.json();
+}
+async function refrescar(){
+  if (!clave) return;
+  try { const r = await pedirPanel(clave); if (r.status === 'ok') render(r); } catch(e){}
+}
+$('ocultar').addEventListener('click', () => {
+  $('dash').style.display = 'none';
+  clearInterval(timer); timer = null; clave = null;
+  resetLetras();
+  document.querySelector('.lock').scrollIntoView({behavior:'smooth', block:'center'});
+});
+
+/* ================= DASHBOARD ================= */
+let datos = [], filtro = 'todo', chDia = null, chHora = null;
+const DIAS = ['dom','lun','mar','mié','jue','vie','sáb'];
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const keyDia = t => { const d = new Date(t); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+const lblDia = k => { const [y,m,d] = k.split('-').map(Number); const f = new Date(y,m-1,d); return DIAS[f.getDay()] + ' ' + d + ' ' + MESES[m-1]; };
+const hhmm = t => new Date(t).toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',hour12:false});
+
+if (window.Chart){
+  Chart.defaults.font.family = 'Nunito';
+  Chart.defaults.font.weight = 700;
+  Chart.defaults.color = '#5d6577';
+}
+
+const keyF = f => { const [d,m,y] = f.split('/'); return y + '-' + m + '-' + d; };   // dd/mm/aaaa → aaaa-mm-dd
+const filtrados = () => filtro === 'todo' ? datos : datos.filter(x => keyF(x.f) === filtro);
+
+function render(r){
+  datos = (r.registros || []).filter(x => /^\d{2}\/\d{2}\/\d{4}$/.test(x.f));
+  $('upd').textContent = 'Actualizado ' + hhmm(r.ts || Date.now());
+  const dias = [...new Set(datos.map(x => keyF(x.f)))].sort();
+  if (filtro !== 'todo' && !dias.includes(filtro)) filtro = 'todo';
+
+  $('chips').innerHTML = '';
+  [['todo','Todo'], ...dias.map(k => [k, lblDia(k)])].forEach(([k, txt]) => {
+    const c = document.createElement('button');
+    c.type = 'button'; c.className = 'chip' + (k === filtro ? ' on' : ''); c.textContent = txt;
+    c.addEventListener('click', () => { filtro = k; render(r); });
+    $('chips').appendChild(c);
+  });
+
+  const f = filtrados();
+
+  // KPIs
+  $('kTotal').textContent = fmt(f.length);
+  const edades = f.map(x => x.e).filter(e => e !== null);
+  $('kEdad').textContent = edades.length ? fmt(Math.round(edades.reduce((a,b) => a+b, 0) / edades.length)) + ' años' : '–';
+  $('kTel').textContent = f.length ? fmt(Math.round(f.filter(x => x.tel).length * 100 / f.length)) + '%' : '–';
+
+  // Participación por actividad (% sobre registros; una persona puede elegir varias)
+  $('barsAct').innerHTML = ACTIVIDADES.map(a => {
+    const c = f.filter(x => x.a.includes(a)).length;
+    const p = f.length ? Math.round(c * 100 / f.length) : 0;
+    return `<div class="row"><span class="nm-a">${a}</span><div class="track"><div class="fill" style="width:${p}%"></div></div><span class="val">${fmt(c)} <small>${p}%</small></span></div>`;
+  }).join('');
+
+  // Por fecha de participación (solo en "Todo" con más de una fecha)
+  const verDia = filtro === 'todo' && dias.length > 1;
+  $('bloqueDia').style.display = verDia ? 'block' : 'none';
+  if (verDia){
+    chDia = grafico(chDia, 'chDia', dias.map(lblDia), dias.map(k => datos.filter(x => keyF(x.f) === k).length));
+  }
+
+  // Por hora de registro
+  const horas = f.map(x => new Date(x.t).getHours());
+  const hMin = horas.length ? Math.min(...horas) : 8, hMax = horas.length ? Math.max(...horas) : 14;
+  const etq = [], val = [];
+  for (let h = hMin; h <= hMax; h++){ etq.push(String(h).padStart(2,'0') + ':00'); val.push(horas.filter(x => x === h).length); }
+  chHora = grafico(chHora, 'chHora', etq, val);
+
+  // Rango de edad
+  const rangos = [['< 18',0,17],['18–29',18,29],['30–39',30,39],['40–49',40,49],['50–59',50,59],['60+',60,200]];
+  const tot = edades.length || 1;
+  $('barsEdad').innerHTML = rangos.map(([n,a,b]) => {
+    const c = edades.filter(e => e >= a && e <= b).length;
+    const p = Math.round(c * 100 / tot);
+    return `<div class="row"><span>${n}</span><div class="track"><div class="fill" style="width:${edades.length ? p : 0}%"></div></div><span class="val">${fmt(c)} <small>${edades.length ? p : 0}%</small></span></div>`;
+  }).join('');
+
+  pintarLista(f);
+}
+
+function grafico(ch, id, labels, data){
+  if (!window.Chart) return null;
+  if (ch){ ch.data.labels = labels; ch.data.datasets[0].data = data; ch.update(); return ch; }
+  return new Chart($(id), {
+    type:'bar',
+    data:{ labels, datasets:[{ data, backgroundColor:'#f6a313', hoverBackgroundColor:'#d98806', borderRadius:8 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => fmt(c.raw) + ' registros' } } },
+      scales:{ y:{ beginAtZero:true, ticks:{ precision:0, callback: v => fmt(v) }, grid:{color:'#f3ead8'} }, x:{ grid:{display:false} } }
+    }
+  });
+}
+
+function pintarLista(f){
+  const q = $('buscar').value.trim().toLowerCase();
+  const l = [...f].sort((a,b) => b.t - a.t).filter(x => !q || x.n.toLowerCase().includes(q));
+  $('lista').innerHTML = l.length
+    ? l.map(x => `<div class="item"><span class="nm">${esc(x.n)}</span><span class="meta">${x.e !== null ? fmt(x.e) + ' años · ' : ''}${esc(x.a.join(', '))}</span></div>`).join('')
+    : '<div class="vacio">Sin registros</div>';
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+$('buscar').addEventListener('input', () => pintarLista(filtrados()));
+</script>
+</body>
+</html>
