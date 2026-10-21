@@ -85,6 +85,8 @@ input.in::placeholder{color:#a4a9b5}
 .sel-op:last-child{border-bottom:none}
 .sel-op:hover,.sel-op.on{background:var(--honey-l)}
 .q.bad .sel-btn{border-color:var(--err)}
+.dsel{margin-top:14px}
+.sel-grp{padding:10px 16px 6px;font-size:12px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);background:#faf5ea}
 .msg-gen{display:none;margin-top:14px;padding:14px;border-radius:12px;background:#fde8e8;color:var(--err);font-weight:700;text-align:center}
 
 /* Éxito */
@@ -111,11 +113,6 @@ input.in::placeholder{color:#a4a9b5}
 .dash-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
 .dash-head h2{font-size:26px;font-weight:900;color:var(--navy)}
 .upd{font-size:13px;color:var(--muted);font-weight:600}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:14px 0 4px;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
-.chip{flex:0 0 auto;font:inherit;font-size:15px;font-weight:800;padding:10px 16px;border-radius:999px;border:2px solid var(--line);
-  background:#fff;color:var(--navy);cursor:pointer;white-space:nowrap}
-.chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
 
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
 .kpi{border-radius:18px;padding:16px;background:var(--honey-l);border:1px solid var(--line)}
@@ -163,17 +160,6 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
     <p class="intro" style="margin-top:8px"><span class="req">*</span> Obligatorio</p>
 
     <form id="form" novalidate>
-      <div class="q" data-f="fecha">
-        <p class="t qt">Fecha de participación <span class="req">*</span></p>
-        <p class="help">Elige el domingo en que vas a participar</p>
-        <div class="sel" id="selFecha">
-          <button type="button" class="sel-btn vacio-sel" id="selBtn"><span id="selTxt">Selecciona una fecha</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="#14213d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
-          <div class="sel-list" id="selList"></div>
-        </div>
-        <p class="err">Selecciona la fecha en que vas a participar.</p>
-      </div>
-
       <div class="q" data-f="actividades">
         <p class="t qt"><span class="num">1.</span>¿En qué va a participar? <span class="req">*</span></p>
         <p class="help">Puedes escoger más de una opción</p>
@@ -264,7 +250,11 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
       <h2>Resumen de registros</h2>
       <span class="upd" id="upd"></span>
     </div>
-    <div class="chips" id="chips"></div>
+    <div class="sel dsel" id="selFiltro">
+      <button type="button" class="sel-btn" id="filtroBtn"><span id="filtroTxt">Total acumulado</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#14213d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="sel-list" id="filtroList"></div>
+    </div>
 
     <div class="kpis">
       <div class="kpi big"><div class="v" id="kTotal">0</div><div class="l">Registros</div></div>
@@ -276,7 +266,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
     <div class="bars acts" id="barsAct"></div>
 
     <div id="bloqueDia">
-      <p class="sec-t">Registros por fecha de participación</p>
+      <p class="sec-t">Registros por fecha</p>
       <div class="chart-box"><canvas id="chDia"></canvas></div>
     </div>
 
@@ -300,7 +290,6 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx1T92FyXTLME7EOXGGNRPsLcqHE3tpO7AuznMnarfe6IwQhhdpyAAPSb1c-RXiBNsc/exec';
 const URL_BASES  = 'https://www.colmena.cl/source/wp-content/uploads/2026/10/Bases-formulario-actividades-Ciclorecreovia.pdf';
 const PALABRA = 'COLMENA';
-const N_DOMINGOS = 8; // próximos domingos que se ofrecen en el selector
 const ACTIVIDADES = ['Entrenamiento funcional','Clases de patines','Enchulamiento de patines','Sorteo'];
 const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#14213d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>';
 
@@ -312,39 +301,6 @@ if (URL_BASES.startsWith('http')) $('linkBases').href = URL_BASES;
 /* ================= FORMULARIO ================= */
 const DIAS_L = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-const fechaDate = f => { const [d,m,y] = f.split('/').map(Number); return new Date(y,m-1,d); };
-const fechaLarga = f => { const x = fechaDate(f); return DIAS_L[x.getDay()] + ' ' + x.getDate() + ' de ' + MESES_L[x.getMonth()]; };
-let fechaSel = '';
-
-// Selector de fecha: próximos domingos + fechas que ya tienen registros
-const ddmmyyyy = d => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
-function proximosDomingos(){
-  const d = new Date(); d.setHours(0,0,0,0);
-  d.setDate(d.getDate() + (7 - d.getDay()) % 7);   // hoy si es domingo, si no el próximo
-  const out = [];
-  for (let i = 0; i < N_DOMINGOS; i++){ out.push(ddmmyyyy(d)); d.setDate(d.getDate() + 7); }
-  return out;
-}
-function pintarFechas(extra){
-  const lista = [...new Set([...proximosDomingos(), ...(extra || [])])].sort((a,b) => fechaDate(a) - fechaDate(b));
-  $('selList').innerHTML = lista.map(f =>
-    `<button type="button" class="sel-op${f === fechaSel ? ' on' : ''}" data-f="${f}">${fechaLarga(f)}</button>`).join('');
-}
-pintarFechas();
-fetch(SCRIPT_URL + '?accion=fechas&_=' + Date.now()).then(r => r.json())
-  .then(r => { if (r.status === 'ok') pintarFechas(r.fechas); }).catch(() => {});
-
-$('selBtn').addEventListener('click', e => { e.stopPropagation(); $('selFecha').classList.toggle('open'); });
-$('selList').addEventListener('click', e => {
-  const b = e.target.closest('.sel-op'); if (!b) return;
-  fechaSel = b.dataset.f;
-  $('selTxt').textContent = fechaLarga(fechaSel);
-  $('selBtn').classList.remove('vacio-sel');
-  document.querySelectorAll('.sel-op').forEach(o => o.classList.toggle('on', o === b));
-  $('selFecha').classList.remove('open');
-  $('selFecha').closest('.q').classList.remove('bad');
-});
-document.addEventListener('click', () => $('selFecha').classList.remove('open'));
 
 // Actividades (selección múltiple)
 $('actividades').innerHTML = ACTIVIDADES.map((a,i) =>
@@ -400,7 +356,6 @@ $('form').addEventListener('submit', async e => {
 
   const acts = [...document.querySelectorAll('input[name=act]:checked')].map(i => i.value);
   const v = [
-    marca('fecha', !!fechaSel),
     marca('actividades', acts.length > 0),
     marca('nombre', nombre.length >= 3),
     marca('rut', rutOk(rut)),
@@ -419,13 +374,11 @@ $('form').addEventListener('submit', async e => {
   try {
     const res = await fetch(SCRIPT_URL, {
       method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({fecha:fechaSel, actividades:acts, nombre, rut, nacimiento:nac, correo, telefono:tel, bases:true, datos:true})
+      body: JSON.stringify({actividades:acts, nombre, rut, nacimiento:nac, correo, telefono:tel, bases:true, datos:true})
     });
     const r = await res.json();
     if (r.status === 'ok'){
       $('form').reset();
-      fechaSel = ''; $('selTxt').textContent = 'Selecciona una fecha'; $('selBtn').classList.add('vacio-sel');
-      document.querySelectorAll('.sel-op').forEach(o => o.classList.remove('on'));
       $('formCard').style.display = 'none';
       $('exito').style.display = 'block';
       window.scrollTo({top:0, behavior:'smooth'});
@@ -518,22 +471,52 @@ if (window.Chart){
   Chart.defaults.color = '#5d6577';
 }
 
-const keyF = f => { const [d,m,y] = f.split('/'); return y + '-' + m + '-' + d; };   // dd/mm/aaaa → aaaa-mm-dd
-const filtrados = () => filtro === 'todo' ? datos : datos.filter(x => keyF(x.f) === filtro);
+const MESES_C = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const keyMes = t => keyDia(t).slice(0,7);                       // aaaa-mm
+const lblMes = k => { const [y,m] = k.split('-').map(Number); return MESES_C[m-1] + ' ' + y; };
+const lblDiaL = k => { const [y,m,d] = k.split('-').map(Number); const f = new Date(y,m-1,d);
+  return DIAS_L[f.getDay()] + ' ' + d + ' de ' + MESES_L[m-1] + ' ' + y; };
+// filtro: 'todo' | 'm:aaaa-mm' | 'd:aaaa-mm-dd'
+const enFiltro = x => filtro === 'todo' ? true
+  : filtro.startsWith('m:') ? keyMes(x.t) === filtro.slice(2) : keyDia(x.t) === filtro.slice(2);
+const filtrados = () => datos.filter(enFiltro);
+const lblFiltro = () => filtro === 'todo' ? 'Total acumulado' : filtro.startsWith('m:') ? lblMes(filtro.slice(2)) : lblDiaL(filtro.slice(2));
+
+// Fechas del selector: domingos desde el primer registro hasta hoy + toda fecha con registros
+function fechasSelector(){
+  const conReg = new Set(datos.map(x => keyDia(x.t)));
+  if (datos.length){
+    const d = new Date(Math.min(...datos.map(x => x.t))); d.setHours(0,0,0,0);
+    d.setDate(d.getDate() + (7 - d.getDay()) % 7);
+    const hoy = new Date(); hoy.setHours(23,59,59,999);
+    while (d <= hoy){ conReg.add(keyDia(d.getTime())); d.setDate(d.getDate() + 7); }
+  }
+  return [...conReg].sort().reverse();
+}
+function pintarSelector(){
+  const dias = fechasSelector();
+  const meses = [...new Set(dias.map(k => k.slice(0,7)))];
+  const op = (v, t) => `<button type="button" class="sel-op${v === filtro ? ' on' : ''}" data-v="${v}">${t}</button>`;
+  $('filtroList').innerHTML = op('todo','Total acumulado')
+    + (meses.length ? '<div class="sel-grp">Por mes</div>' + meses.map(m => op('m:' + m, lblMes(m))).join('') : '')
+    + (dias.length ? '<div class="sel-grp">Por fecha</div>' + dias.map(k => op('d:' + k, lblDiaL(k))).join('') : '');
+  $('filtroTxt').textContent = lblFiltro();
+}
+$('filtroBtn').addEventListener('click', e => { e.stopPropagation(); $('selFiltro').classList.toggle('open'); });
+$('filtroList').addEventListener('click', e => {
+  const b = e.target.closest('.sel-op'); if (!b) return;
+  e.stopPropagation();
+  filtro = b.dataset.v; $('selFiltro').classList.remove('open');
+  render({registros: datos, ts: ultimoTs});
+});
+document.addEventListener('click', () => $('selFiltro').classList.remove('open'));
+let ultimoTs = Date.now();
 
 function render(r){
-  datos = (r.registros || []).filter(x => /^\d{2}\/\d{2}\/\d{4}$/.test(x.f));
-  $('upd').textContent = 'Actualizado ' + hhmm(r.ts || Date.now());
-  const dias = [...new Set(datos.map(x => keyF(x.f)))].sort();
-  if (filtro !== 'todo' && !dias.includes(filtro)) filtro = 'todo';
-
-  $('chips').innerHTML = '';
-  [['todo','Todo'], ...dias.map(k => [k, lblDia(k)])].forEach(([k, txt]) => {
-    const c = document.createElement('button');
-    c.type = 'button'; c.className = 'chip' + (k === filtro ? ' on' : ''); c.textContent = txt;
-    c.addEventListener('click', () => { filtro = k; render(r); });
-    $('chips').appendChild(c);
-  });
+  datos = r.registros || [];
+  ultimoTs = r.ts || Date.now();
+  $('upd').textContent = 'Actualizado ' + hhmm(ultimoTs);
+  pintarSelector();
 
   const f = filtrados();
 
@@ -550,11 +533,12 @@ function render(r){
     return `<div class="row"><span class="nm-a">${a}</span><div class="track"><div class="fill" style="width:${p}%"></div></div><span class="val">${fmt(c)} <small>${p}%</small></span></div>`;
   }).join('');
 
-  // Por fecha de participación (solo en "Todo" con más de una fecha)
-  const verDia = filtro === 'todo' && dias.length > 1;
+  // Por fecha (en total acumulado o mes, si hay más de una fecha)
+  const diasF = [...new Set(f.map(x => keyDia(x.t)))].sort();
+  const verDia = !filtro.startsWith('d:') && diasF.length > 1;
   $('bloqueDia').style.display = verDia ? 'block' : 'none';
   if (verDia){
-    chDia = grafico(chDia, 'chDia', dias.map(lblDia), dias.map(k => datos.filter(x => keyF(x.f) === k).length));
+    chDia = grafico(chDia, 'chDia', diasF.map(lblDia), diasF.map(k => f.filter(x => keyDia(x.t) === k).length));
   }
 
   // Por hora de registro
@@ -594,7 +578,7 @@ function pintarLista(f){
   const q = $('buscar').value.trim().toLowerCase();
   const l = [...f].sort((a,b) => b.t - a.t).filter(x => !q || x.n.toLowerCase().includes(q));
   $('lista').innerHTML = l.length
-    ? l.map(x => `<div class="item"><span class="nm">${esc(x.n)}</span><span class="meta">${x.e !== null ? fmt(x.e) + ' años · ' : ''}${esc(x.a.join(', '))}</span></div>`).join('')
+    ? l.map(x => `<div class="item"><span class="nm">${esc(x.n)}</span><span class="meta">${x.e !== null ? fmt(x.e) + ' años · ' : ''}${esc(x.a.join(', '))}</span><span class="meta">${lblDia(keyDia(x.t))} · ${hhmm(x.t)}</span></div>`).join('')
     : '<div class="vacio">Sin registros</div>';
 }
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
