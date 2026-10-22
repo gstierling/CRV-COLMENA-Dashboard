@@ -82,19 +82,25 @@ input.in::placeholder{color:#a4a9b5}
 .sel-op:last-child{border-bottom:none}
 .sel-op:hover,.sel-op.on{background:var(--honey-l)}
 .q.bad .sel-btn{border-color:var(--err)}
-.sexo{margin-top:14px}
+.sexo{margin-top:12px}
 .sx-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
 .sx{display:flex;align-items:center;gap:8px}
 .sx.m{text-align:right}
 .sx .ic{width:38px;height:38px;flex:0 0 38px}
-.sx.h .ic{fill:#0172cb}
-.sx.m .ic{fill:#5aaef0}
 .sx-n{font-size:14px;font-weight:800;color:var(--muted);line-height:1.1}
 .sx-v{font-size:clamp(24px,7.5vw,32px);font-weight:900;color:var(--navy);line-height:1.05;white-space:nowrap}
 .sx-v small{font-size:15px;font-weight:700;color:var(--muted)}
-.sx-bar{display:flex;height:26px;border-radius:13px;overflow:hidden;background:#8cc6f5}
-.sx-fh{background:#0172cb;transition:width .5s}
-.sx-fm{flex:1;background:#8cc6f5}
+.sexo{background:#0a3d73;border-radius:16px;padding:12px 14px 14px}
+.sexo .sx-v{color:#fff}
+.sexo .sx-v small{color:#b9d9f5}
+.sx.h .ic{fill:#ffffff}
+.sx.m .ic{fill:#7fc3fa}
+.sx-bar{display:flex;gap:3px;height:30px;border-radius:15px;overflow:hidden;background:#0a3d73;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.35)}
+.sx-fh,.sx-fm{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.22) 0 7px,transparent 7px 14px);
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
+.sx-fh{background-color:#ffffff;background-image:repeating-linear-gradient(135deg,rgba(1,114,203,.18) 0 7px,transparent 7px 14px);transition:width .5s}
+.sx-fm{flex:1;background-color:#7fc3fa}
 .nota{font-size:12px;color:var(--muted);font-weight:600;text-align:center;margin-top:6px}
 .dsel{margin-top:0}
 .upd{display:block;text-align:right;margin-top:6px}
@@ -138,7 +144,6 @@ input.in::placeholder{color:#a4a9b5}
 .kpi .l{font-size:14px;font-weight:700;color:var(--muted);margin-top:4px}
 .kpi.big .l{color:#fff;opacity:.9;font-size:15px}
 
-.act-box{position:relative;width:100%;height:230px}
 .sec-t{font-size:17px;font-weight:900;color:var(--navy);margin:18px 0 8px}
 .chart-box{position:relative;height:190px}
 .bars.acts .row{grid-template-columns:1fr 84px}
@@ -171,9 +176,11 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:16px}
 
   <div class="toggles">
     <button class="btn tg" type="button" id="tgDash">Mostrar Dashboard</button>
-    <button class="btn tg sec" type="button" id="tgForm">Mostrar Formulario</button>
+    <button class="btn tg sec" type="button" id="tgForm">Ocultar Formulario</button>
   </div>
 
+  <div id="grupos">
+  <div id="grpDash">
   <!-- CANDADO -->
   <section class="card lock" id="lockCard">
     <h3>Acceso dashboard</h3>
@@ -207,7 +214,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:16px}
     </div>
 
     <p class="sec-t">Participación por actividad</p>
-    <div class="act-box"><canvas id="chAct"></canvas></div>
+    <div class="bars acts" id="barsAct"></div>
 
     <p class="sec-t">Registros por hora</p>
     <div class="chart-box"><canvas id="chHora"></canvas></div>
@@ -223,8 +230,11 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:16px}
   </section>
 
 
+  </div>
+
+  <div id="grpForm">
   <!-- FORMULARIO -->
-  <section class="card" id="formCard" style="display:none">
+  <section class="card" id="formCard" style="display:block">
     <p class="intro">Cuando envíes este formulario no se recopilarán automáticamente tus datos, como el nombre y el correo electrónico, a menos que los ingreses tú mismo.</p>
     <p class="intro" style="margin-top:8px"><span class="req">*</span> Obligatorio</p>
 
@@ -305,6 +315,9 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:16px}
     <p>Gracias por participar de COLMENA en CicloRecreoVía.</p>
     <button class="btn" type="button" id="otro">REGISTRAR A OTRA PERSONA</button>
   </section>
+
+  </div>
+  </div>
 
   <footer>CicloRecreoVía · COLMENA</footer>
 </main>
@@ -481,6 +494,7 @@ async function pedirPanel(c){
     if (r.status === 'ok'){
       clave = c;
       document.querySelectorAll('.letra').forEach(b => b.classList.add('on'));
+      alInicio('grpDash');
       $('dash').style.display = 'block';
       render(r); botones();
       timer = setInterval(refrescar, 30000);
@@ -493,6 +507,7 @@ async function refrescar(){
   try { const r = await pedirPanel(clave); if (r.status === 'ok') render(r); } catch(e){}
 }
 const visible = id => $(id).style.display === 'block';
+const alInicio = id => $('grupos').prepend($(id));   // lo recién mostrado queda primero, bajo el título
 function botones(){
   $('tgDash').textContent = (visible('dash') || visible('lockCard')) ? 'Ocultar Dashboard' : 'Mostrar Dashboard';
   $('tgForm').textContent = (visible('formCard') || visible('exito')) ? 'Ocultar Formulario' : 'Mostrar Formulario';
@@ -505,6 +520,7 @@ function ocultarDash(){
 }
 $('tgDash').addEventListener('click', () => {
   if (visible('dash') || visible('lockCard')) return ocultarDash();
+  alInicio('grpDash');
   $('lockCard').style.display = 'block'; botones();
   $('lockCard').scrollIntoView({behavior:'smooth', block:'center'});
 });
@@ -513,6 +529,7 @@ $('tgForm').addEventListener('click', () => {
   if (visible('formCard') || visible('exito')){
     $('formCard').style.display = 'none'; $('exito').style.display = 'none';
   } else {
+    alInicio('grpForm');
     $('exito').style.display = 'none'; $('formCard').style.display = 'block';
     $('formCard').scrollIntoView({behavior:'smooth', block:'start'});
   }
@@ -537,7 +554,7 @@ function sexo(nombre){
 }
 
 /* ================= DASHBOARD ================= */
-let datos = [], filtro = 'todo', chHora = null, chAct = null;
+let datos = [], filtro = 'todo', chHora = null;
 const DIAS = ['dom','lun','mar','mié','jue','vie','sáb'];
 const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const keyDia = t => { const d = new Date(t); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
@@ -606,20 +623,12 @@ function render(r){
   $('kEdad').textContent = edades.length ? fmt(Math.round(edades.reduce((a,b) => a+b, 0) / edades.length)) + ' años' : '–';
 
   // Participación por actividad (% sobre registros; una persona puede elegir varias)
-  const cAct = ACTIVIDADES.map(a => f.filter(x => x.a.includes(a)).length);
-  if (window.Chart){
-    if (chAct){ chAct.data.datasets[0].data = cAct; chAct.update(); }
-    else chAct = new Chart($('chAct'), {
-      type:'doughnut',
-      data:{ labels:ACTIVIDADES, datasets:[{ data:cAct, backgroundColor:COLORES_ACT, borderColor:'#fff', borderWidth:2 }] },
-      plugins:[etiquetasAct],
-      options:{ cutout:'52%', responsive:true, maintainAspectRatio:false, animation:{duration:400},
-        layout:{ padding:{left:108, right:108, top:14, bottom:14} },
-        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => {
-          const t = c.dataset.data.reduce((a,b) => a+b, 0) || 1;
-          return ' ' + fmt(c.raw) + ' (' + Math.round(c.raw * 100 / t) + '%)'; } } } } }
-    });
-  }
+  const totAct = f.reduce((s, x) => s + x.a.filter(a => ACTIVIDADES.includes(a)).length, 0);
+  $('barsAct').innerHTML = ACTIVIDADES.map(a => {
+    const c = f.filter(x => x.a.includes(a)).length;
+    const p = totAct ? Math.round(c * 100 / totAct) : 0;
+    return `<div class="row"><span class="nm-a">${a}</span><div class="track"><div class="fill" style="width:${p}%"></div></div><span class="val">${fmt(c)} <small>(${p}%)</small></span></div>`;
+  }).join('');
 
   // Hombres / mujeres (estimado por nombre)
   const nH = f.filter(x => sexo(x.n) === 'H').length, nM = f.length - nH;
@@ -644,53 +653,6 @@ function render(r){
 
   pintarLista(f);
 }
-
-const COLORES_ACT = ['#0172cb','#0a3d73','#5aaef0','#a9d4f7'];
-// Etiqueta (nombre, cifra y %) al lado de cada sector, afuera de la dona, con línea guía
-const etiquetasAct = {
-  id:'etiquetasAct',
-  afterDraw(ch){
-    const ctx = ch.ctx, ds = ch.data.datasets[0], tot = ds.data.reduce((a,b) => a+b, 0);
-    const arcs = ch.getDatasetMeta(0).data; if (!arcs.length) return;
-    const cx = arcs[0].x, cy = arcs[0].y, R = arcs[0].outerRadius, H = ch.height;
-    const F = 'Nunito, system-ui, sans-serif';
-    const items = arcs.map((arc, i) => {
-      const ang = (arc.startAngle + arc.endAngle) / 2;
-      return { i, ang, der: Math.cos(ang) >= 0, y: cy + Math.sin(ang) * (R + 10) };
-    });
-    const maxW = ch.width / 2 - R - 22;
-    [true, false].forEach(der => {
-      const g = items.filter(it => it.der === der).sort((a,b) => a.y - b.y);
-      const GAP = 50;
-      g.forEach((it, k) => { if (k && it.y - g[k-1].y < GAP) it.y = g[k-1].y + GAP; });
-      const exceso = g.length ? g[g.length-1].y - (H - 24) : 0;
-      if (exceso > 0) g.forEach(it => it.y -= exceso);
-      g.forEach((it, k) => { if (it.y < 24) it.y = 24 + k * GAP; });
-    });
-    items.forEach(it => {
-      const v = ds.data[it.i], p = tot ? Math.round(v * 100 / tot) : 0;
-      const sx = cx + Math.cos(it.ang) * (R + 2), sy = cy + Math.sin(it.ang) * (R + 2);
-      const tx = it.der ? cx + R + 16 : cx - R - 16;
-      ctx.save();
-      ctx.strokeStyle = COLORES_ACT[it.i]; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(it.der ? tx - 4 : tx + 4, it.y); ctx.stroke();
-      ctx.textAlign = it.der ? 'left' : 'right'; ctx.textBaseline = 'middle';
-      // Nombre en 1–2 líneas
-      let fs = 12; ctx.font = '800 12px ' + F;
-      const larga = Math.max(...ch.data.labels[it.i].split(' ').map(w => ctx.measureText(w).width));
-      if (larga > maxW) fs = Math.max(9, Math.floor(12 * maxW / larga));
-      ctx.font = '800 ' + fs + 'px ' + F; ctx.fillStyle = '#5a6b80';
-      const pal = ch.data.labels[it.i].split(' '), lin = [];
-      pal.forEach(w => { const l = lin.length ? lin[lin.length-1] + ' ' + w : w;
-        if (lin.length && ctx.measureText(l).width <= maxW) lin[lin.length-1] = l; else lin.push(w); });
-      const top = it.y - (lin.length * 14 + 16) / 2 + 7;
-      lin.forEach((l, k) => ctx.fillText(l, tx, top + k * 14));
-      ctx.font = '900 16px ' + F; ctx.fillStyle = '#0a3d73';
-      ctx.fillText(fmt(v) + ' (' + p + '%)', tx, top + lin.length * 14 + 3);
-      ctx.restore();
-    });
-  }
-};
 
 function grafico(ch, id, labels, data){
   if (!window.Chart) return null;
