@@ -462,14 +462,10 @@ async function pulsar(b, l){
   try {
     const r = await pedirPanel(intento);
     if (r.status === 'ok'){
-      clave = intento; $('lockMsg').textContent = '';
-      try { localStorage.setItem('colmenaClave', intento); } catch(e){}
-      $('lockCard').style.display = 'none';
-      $('dash').style.display = 'block';
-      render(r); botones();
+      $('lockMsg').textContent = '';
+      guardarClave(intento);
+      abrirDash(intento, r);
       window.scrollTo({top:0, behavior:'smooth'});
-      clearInterval(timer);
-      timer = setInterval(refrescar, 30000);
     } else {
       $('lockMsg').textContent = '';
       $('letras').classList.add('shake');
@@ -484,26 +480,51 @@ async function pedirPanel(c){
   const res = await fetch(SCRIPT_URL + '?accion=panel&clave=' + encodeURIComponent(c) + '&_=' + Date.now());
   return res.json();
 }
-// Si ya se ingresó la clave en este navegador, el dashboard sigue visible al recargar
+/* ---- Clave válida por 5 horas en este navegador ---- */
+const VIGENCIA_CLAVE = 5 * 60 * 60 * 1000;
+function guardarClave(c){ try { localStorage.setItem('colmenaClave', JSON.stringify({c, t: Date.now()})); } catch(e){} }
+function claveVigente(){
+  try {
+    const o = JSON.parse(localStorage.getItem('colmenaClave') || 'null');
+    if (o && o.c && Date.now() - o.t < VIGENCIA_CLAVE) return o.c;
+    localStorage.removeItem('colmenaClave');
+  } catch(e){}
+  return null;
+}
+function olvidarClave(){ try { localStorage.removeItem('colmenaClave'); localStorage.removeItem('colmenaDashVisible'); } catch(e){} }
+function marcarVisible(v){ try { v ? localStorage.setItem('colmenaDashVisible','1') : localStorage.removeItem('colmenaDashVisible'); } catch(e){} }
+
+function abrirDash(c, r){
+  clave = c;
+  document.querySelectorAll('.letra').forEach(b => b.classList.add('on'));
+  alInicio('grpDash');
+  $('lockCard').style.display = 'none';
+  $('dash').style.display = 'block';
+  render(r); botones(); marcarVisible(true);
+  clearInterval(timer); timer = setInterval(refrescar, 30000);
+}
+function pedirClave(){
+  alInicio('grpDash');
+  resetLetras(); $('lockMsg').textContent = '';
+  $('lockCard').style.display = 'block'; botones();
+  $('lockCard').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+// Al recargar: si el dashboard estaba abierto y la clave sigue vigente, se mantiene visible
 (async function(){
-  let c = null;
-  try { c = localStorage.getItem('colmenaClave'); } catch(e){}
-  if (!c) return;
+  let vis = null;
+  try { vis = localStorage.getItem('colmenaDashVisible'); } catch(e){}
+  const c = claveVigente();
+  if (!c || !vis) return;
   try {
     const r = await pedirPanel(c);
-    if (r.status === 'ok'){
-      clave = c;
-      document.querySelectorAll('.letra').forEach(b => b.classList.add('on'));
-      alInicio('grpDash');
-      $('dash').style.display = 'block';
-      render(r); botones();
-      timer = setInterval(refrescar, 30000);
-    } else { try { localStorage.removeItem('colmenaClave'); } catch(e){} }
+    if (r.status === 'ok') abrirDash(c, r); else olvidarClave();
   } catch(e){}
 })();
 
 async function refrescar(){
   if (!clave) return;
+  if (!claveVigente()){ ocultarDash(); return; }   // pasaron las 5 horas
   try { const r = await pedirPanel(clave); if (r.status === 'ok') render(r); } catch(e){}
 }
 const visible = id => $(id).style.display === 'block';
@@ -515,14 +536,19 @@ function botones(){
 function ocultarDash(){
   $('dash').style.display = 'none'; $('lockCard').style.display = 'none';
   clearInterval(timer); timer = null; clave = null;
-  try { localStorage.removeItem('colmenaClave'); } catch(e){}
+  marcarVisible(false);            // la clave se mantiene guardada hasta cumplir 5 horas
   resetLetras(); $('lockMsg').textContent = ''; botones();
 }
-$('tgDash').addEventListener('click', () => {
+$('tgDash').addEventListener('click', async () => {
   if (visible('dash') || visible('lockCard')) return ocultarDash();
-  alInicio('grpDash');
-  $('lockCard').style.display = 'block'; botones();
-  $('lockCard').scrollIntoView({behavior:'smooth', block:'center'});
+  const c = claveVigente();
+  if (!c) return pedirClave();
+  $('tgDash').textContent = 'Cargando…';
+  try {
+    const r = await pedirPanel(c);
+    if (r.status === 'ok'){ abrirDash(c, r); window.scrollTo({top:0, behavior:'smooth'}); }
+    else { olvidarClave(); pedirClave(); }
+  } catch(e){ botones(); pedirClave(); $('lockMsg').textContent = 'Sin conexión con el servidor. Intenta nuevamente.'; }
 });
 $('ocultar').addEventListener('click', () => { ocultarDash(); window.scrollTo({top:0, behavior:'smooth'}); });
 $('tgForm').addEventListener('click', () => {
