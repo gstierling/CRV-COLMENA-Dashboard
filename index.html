@@ -85,6 +85,18 @@ input.in::placeholder{color:#a4a9b5}
 .sel-op:last-child{border-bottom:none}
 .sel-op:hover,.sel-op.on{background:var(--honey-l)}
 .q.bad .sel-btn{border-color:var(--err)}
+.dona-wrap{display:flex;flex-direction:column;align-items:center;gap:16px}
+.dona-box{position:relative;width:min(260px,72vw);aspect-ratio:1}
+.dona-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.dona-c b{font-size:clamp(34px,11vw,46px);font-weight:900;color:var(--navy);line-height:1}
+.dona-c span{font-size:14px;font-weight:700;color:var(--muted)}
+.dona-leg{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.leg{border-radius:16px;padding:14px;border:1px solid var(--line);background:#fffdf8}
+.leg .sw{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:6px;vertical-align:-1px}
+.leg .nm{font-size:15px;font-weight:800;color:var(--navy)}
+.leg .v{font-size:clamp(26px,8vw,34px);font-weight:900;color:var(--navy);margin-top:6px}
+.leg .v small{font-size:16px;color:var(--muted);font-weight:700}
+.nota{font-size:13px;color:var(--muted);font-weight:600;text-align:center;margin-top:10px}
 .dsel{margin-top:14px}
 .sel-grp{padding:10px 16px 6px;font-size:12px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);background:#faf5ea}
 .msg-gen{display:none;margin-top:14px;padding:14px;border-radius:12px;background:#fde8e8;color:var(--err);font-weight:700;text-align:center}
@@ -147,12 +159,58 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
 <body>
 
 <header class="hero">
-  <div class="hex-logo">C</div>
   <h1>COLMENA <span>en</span><br>CicloRecreoVía</h1>
   <p>Registro de participantes</p>
 </header>
 
 <main class="wrap">
+
+  <!-- DASHBOARD -->
+  <section class="card" id="dash">
+    <div class="dash-head">
+      <h2>Resumen de registros</h2>
+      <span class="upd" id="upd"></span>
+    </div>
+    <div class="sel dsel" id="selFiltro">
+      <button type="button" class="sel-btn" id="filtroBtn"><span id="filtroTxt">Total acumulado</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#14213d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="sel-list" id="filtroList"></div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi big"><div class="v" id="kTotal">0</div><div class="l">Registros</div></div>
+      <div class="kpi"><div class="v" id="kEdad">–</div><div class="l">Edad promedio</div></div>
+      <div class="kpi"><div class="v" id="kTel">–</div><div class="l">Dejaron teléfono</div></div>
+    </div>
+
+    <p class="sec-t">Hombres y mujeres</p>
+    <div class="dona-wrap">
+      <div class="dona-box"><canvas id="chSexo"></canvas><div class="dona-c"><b id="donaTot">0</b><span>registros</span></div></div>
+      <div class="dona-leg" id="donaLeg"></div>
+    </div>
+    <p class="nota">Estimado según el primer nombre de cada persona.</p>
+
+    <p class="sec-t">Participación por actividad</p>
+    <div class="bars acts" id="barsAct"></div>
+
+    <div id="bloqueDia">
+      <p class="sec-t">Registros por fecha</p>
+      <div class="chart-box"><canvas id="chDia"></canvas></div>
+    </div>
+
+    <p class="sec-t">Registros por hora</p>
+    <div class="chart-box"><canvas id="chHora"></canvas></div>
+
+    <p class="sec-t">Rango de edad</p>
+    <div class="bars" id="barsEdad"></div>
+
+    <p class="sec-t">Listado de registrados</p>
+    <input class="in buscar" id="buscar" type="search" placeholder="Buscar por nombre">
+    <div class="lista" id="lista"></div>
+
+    <button class="btn sec ocultar" type="button" id="ocultar">OCULTAR</button>
+  </section>
+
 
   <!-- FORMULARIO -->
   <section class="card" id="formCard">
@@ -242,45 +300,6 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
     <h3>Acceso dashboard</h3>
     <div class="letras" id="letras"></div>
     <p class="lock-msg" id="lockMsg"></p>
-  </section>
-
-  <!-- DASHBOARD -->
-  <section class="card" id="dash">
-    <div class="dash-head">
-      <h2>Resumen de registros</h2>
-      <span class="upd" id="upd"></span>
-    </div>
-    <div class="sel dsel" id="selFiltro">
-      <button type="button" class="sel-btn" id="filtroBtn"><span id="filtroTxt">Total acumulado</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#14213d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
-      <div class="sel-list" id="filtroList"></div>
-    </div>
-
-    <div class="kpis">
-      <div class="kpi big"><div class="v" id="kTotal">0</div><div class="l">Registros</div></div>
-      <div class="kpi"><div class="v" id="kEdad">–</div><div class="l">Edad promedio</div></div>
-      <div class="kpi"><div class="v" id="kTel">–</div><div class="l">Dejaron teléfono</div></div>
-    </div>
-
-    <p class="sec-t">Participación por actividad</p>
-    <div class="bars acts" id="barsAct"></div>
-
-    <div id="bloqueDia">
-      <p class="sec-t">Registros por fecha</p>
-      <div class="chart-box"><canvas id="chDia"></canvas></div>
-    </div>
-
-    <p class="sec-t">Registros por hora</p>
-    <div class="chart-box"><canvas id="chHora"></canvas></div>
-
-    <p class="sec-t">Rango de edad</p>
-    <div class="bars" id="barsEdad"></div>
-
-    <p class="sec-t">Listado de registrados</p>
-    <input class="in buscar" id="buscar" type="search" placeholder="Buscar por nombre">
-    <div class="lista" id="lista"></div>
-
-    <button class="btn sec ocultar" type="button" id="ocultar">OCULTAR</button>
   </section>
 
   <footer>CicloRecreoVía · COLMENA</footer>
@@ -429,7 +448,7 @@ async function pulsar(b, l){
       clave = intento; $('lockMsg').textContent = '';
       $('dash').style.display = 'block';
       render(r);
-      $('dash').scrollIntoView({behavior:'smooth'});
+      window.scrollTo({top:0, behavior:'smooth'});
       clearInterval(timer);
       timer = setInterval(refrescar, 30000);
     } else {
@@ -457,8 +476,26 @@ $('ocultar').addEventListener('click', () => {
   document.querySelector('.lock').scrollIntoView({behavior:'smooth', block:'center'});
 });
 
+
+/* ===== Sexo estimado según el primer nombre ===== */
+const sinTilde = t => t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const NOM_H = new Set(('jose juan luis carlos jorge pedro pablo diego felipe andres cristian christian cristobal sebastian matias nicolas ignacio francisco javier rodrigo gonzalo alejandro manuel miguel fernando ricardo eduardo daniel david alberto hector mario sergio raul victor claudio patricio mauricio marcelo hernan oscar rene enrique jaime ivan esteban tomas benjamin vicente martin agustin joaquin maximiliano lucas gabriel samuel bastian alonso gaspar emilio julian maximo leon santiago rafael rodolfo arturo fabian franco bruno dante mateo thiago tiago simon adrian alexis kevin brian bryan jonathan johan jean jhon john michael axel elias isaac ismael angel ariel marco leonardo hugo ruben ramon alfredo gustavo guillermo humberto ernesto osvaldo nelson wilson edgar edson boris ronald roberto hans erick eric freddy moises abraham aaron noel joel saul luca joshua borja nikita isai josue juanpablo').split(' '));
+const NOM_M = new Set(('maria carmen isabel raquel ruth belen pilar soledad mercedes beatriz ines luz abigail nicole michelle denisse denise ingrid rocio consuelo rosario amparo ivonne yasmin jazmin karen evelyn jacqueline ester esther miriam lourdes dolores margarita catalina constanza javiera francisca valentina antonia fernanda daniela camila paula carolina andrea alejandra macarena barbara monica veronica patricia claudia marcela gabriela natalia tamara pamela paz trinidad sol flor ailen aylen lizbeth elizabeth isabeles noemi dafne daphne raquel judith edith maribel marisol araceli sharon ashley allison kimberly nataly nathaly yeny jenny cecilia alison madeleine jocelyn joselyn marlen irene adriana analia angelis itzel abril ivette anabel mabel grisel maite aime anais ines dulce').split(' '));
+function sexo(nombre){
+  const p = sinTilde(String(nombre).trim()).split(/\s+/).filter(Boolean);
+  if (!p.length) return 'H';
+  let n = p[0];
+  if (n === 'maria' || n === 'ma' || n === 'ma.') return 'M';         // María José, María Paz…
+  if (n === 'jose' || n === 'juan') return 'H';                        // José María, Juan Pablo…
+  if (NOM_M.has(n)) return 'M';
+  if (NOM_H.has(n)) return 'H';
+  if (/(a|ia|ela|ina|ana|isa|ette|elle|lyn|lin|ys|is)$/.test(n)) return 'M';
+  if (/(o|os|el|er|an|en|on|in|ar|or|ur|io|iel|ix|ex|z|d|t|s)$/.test(n)) return 'H';
+  return n.endsWith('e') ? 'M' : 'H';
+}
+
 /* ================= DASHBOARD ================= */
-let datos = [], filtro = 'todo', chDia = null, chHora = null;
+let datos = [], filtro = 'todo', chDia = null, chHora = null, chSexo = null;
 const DIAS = ['dom','lun','mar','mié','jue','vie','sáb'];
 const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const keyDia = t => { const d = new Date(t); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
@@ -524,14 +561,33 @@ function render(r){
   $('kTotal').textContent = fmt(f.length);
   const edades = f.map(x => x.e).filter(e => e !== null);
   $('kEdad').textContent = edades.length ? fmt(Math.round(edades.reduce((a,b) => a+b, 0) / edades.length)) + ' años' : '–';
-  $('kTel').textContent = f.length ? fmt(Math.round(f.filter(x => x.tel).length * 100 / f.length)) + '%' : '–';
+  const nTel = f.filter(x => x.tel).length;
+  $('kTel').innerHTML = f.length ? fmt(nTel) + ' <small style="font-size:.5em;color:var(--muted)">(' + Math.round(nTel * 100 / f.length) + '%)</small>' : '–';
 
   // Participación por actividad (% sobre registros; una persona puede elegir varias)
   $('barsAct').innerHTML = ACTIVIDADES.map(a => {
     const c = f.filter(x => x.a.includes(a)).length;
     const p = f.length ? Math.round(c * 100 / f.length) : 0;
-    return `<div class="row"><span class="nm-a">${a}</span><div class="track"><div class="fill" style="width:${p}%"></div></div><span class="val">${fmt(c)} <small>${p}%</small></span></div>`;
+    return `<div class="row"><span class="nm-a">${a}</span><div class="track"><div class="fill" style="width:${p}%"></div></div><span class="val">${fmt(c)} <small>(${p}%)</small></span></div>`;
   }).join('');
+
+  // Hombres / mujeres (estimado por nombre)
+  const nH = f.filter(x => sexo(x.n) === 'H').length, nM = f.length - nH;
+  const pc = c => f.length ? Math.round(c * 100 / f.length) : 0;
+  $('donaTot').textContent = fmt(f.length);
+  $('donaLeg').innerHTML = [['Hombres', nH, '#14213d'], ['Mujeres', nM, '#f6a313']].map(([n,c,col]) =>
+    `<div class="leg"><span class="nm"><span class="sw" style="background:${col}"></span>${n}</span><div class="v">${fmt(c)} <small>(${pc(c)}%)</small></div></div>`).join('');
+  if (window.Chart){
+    if (chSexo){ chSexo.data.datasets[0].data = [nH, nM]; chSexo.update(); }
+    else chSexo = new Chart($('chSexo'), {
+      type:'doughnut',
+      data:{ labels:['Hombres','Mujeres'], datasets:[{ data:[nH, nM], backgroundColor:['#14213d','#f6a313'], borderColor:'#fff', borderWidth:4, hoverOffset:6 }] },
+      options:{ cutout:'66%', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => {
+          const t = c.dataset.data.reduce((a,b) => a+b, 0) || 1;
+          return ' ' + c.label + ': ' + fmt(c.raw) + ' (' + Math.round(c.raw * 100 / t) + '%)'; } } } } }
+    });
+  }
 
   // Por fecha (en total acumulado o mes, si hay más de una fecha)
   const diasF = [...new Set(f.map(x => keyDia(x.t)))].sort();
@@ -554,7 +610,7 @@ function render(r){
   $('barsEdad').innerHTML = rangos.map(([n,a,b]) => {
     const c = edades.filter(e => e >= a && e <= b).length;
     const p = Math.round(c * 100 / tot);
-    return `<div class="row"><span>${n}</span><div class="track"><div class="fill" style="width:${edades.length ? p : 0}%"></div></div><span class="val">${fmt(c)} <small>${edades.length ? p : 0}%</small></span></div>`;
+    return `<div class="row"><span>${n}</span><div class="track"><div class="fill" style="width:${edades.length ? p : 0}%"></div></div><span class="val">${fmt(c)} <small>(${edades.length ? p : 0}%)</small></span></div>`;
   }).join('');
 
   pintarLista(f);
@@ -568,7 +624,7 @@ function grafico(ch, id, labels, data){
     data:{ labels, datasets:[{ data, backgroundColor:'#f6a313', hoverBackgroundColor:'#d98806', borderRadius:8 }] },
     options:{
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => fmt(c.raw) + ' registros' } } },
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => { const t = c.dataset.data.reduce((a,b) => a+b, 0) || 1; return fmt(c.raw) + ' registros (' + Math.round(c.raw * 100 / t) + '%)'; } } } },
       scales:{ y:{ beginAtZero:true, ticks:{ precision:0, callback: v => fmt(v) }, grid:{color:'#f3ead8'} }, x:{ grid:{display:false} } }
     }
   });
