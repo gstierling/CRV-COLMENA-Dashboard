@@ -58,7 +58,7 @@ input.in::placeholder{color:#a4a9b5}
 .check input:checked + .box svg{opacity:1}
 .check input:checked + .box svg path{stroke:#fff}
 .check input:focus-visible + .box{box-shadow:0 0 0 4px rgba(1,114,203,.25)}
-.check span.lbl{font-size:17px;font-weight:700}
+.check span.lbl{font-size:17px;font-weight:700;line-height:1.35}
 .q.bad .check{border-color:var(--err)}
 
 .btn{display:block;width:100%;font:inherit;font-size:20px;font-weight:900;letter-spacing:.5px;padding:15px;border:none;border-radius:16px;
@@ -303,6 +303,29 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:16px}
         <p class="err">Debes autorizar el tratamiento de datos para registrarte.</p>
       </div>
 
+      <div class="q" data-f="concurso">
+        <p class="t qt"><span class="num">9.</span>Autorización del tratamiento de mis datos personales <span class="req">*</span></p>
+        <p class="help">Al inscribirme en el presente concurso de bicicletas, organizado por Colmena Golden Cross S.A. en el marco de su auspicio en la Ciclorecreovía, declaro haber leído y aceptado íntegramente las Bases del Concurso. Asimismo, autorizo expresamente a Colmena Golden Cross S.A. a tratar mis datos personales para gestionar mi participación, verificar el cumplimiento de los requisitos establecidos en las Bases, realizar el sorteo, contactarme en caso de resultar ganador, comunicar los resultados cuando corresponda y coordinar el despacho y la entrega del premio en mi domicilio.</p>
+        <p class="help">En caso de resultar ganador y de que un proveedor externo intervenga en el despacho y la entrega del premio, autorizo a Colmena Golden Cross S.A. a comunicarle únicamente los datos de identificación, contacto y domicilio estrictamente necesarios para realizar dicha entrega.</p>
+        <label class="check">
+          <input type="checkbox" id="concurso">
+          <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#0a3d73" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>
+          <span class="lbl">Sí, autorizo</span>
+        </label>
+        <p class="err">Debes autorizar el tratamiento de datos para registrarte.</p>
+      </div>
+
+      <div class="q" data-f="responsabilidad">
+        <p class="t qt"><span class="num">10.</span>Condiciones de participación y responsabilidad <span class="req">*</span></p>
+        <p class="help">La participación en las actividades auspiciadas por Colmena es voluntaria y se realiza bajo la exclusiva responsabilidad de cada participante. En consecuencia, Colmena no será responsable por accidentes, lesiones, daños o perjuicios de cualquier naturaleza que puedan sufrir los participantes durante dichas actividades o como consecuencia de su participación en ellas.</p>
+        <label class="check">
+          <input type="checkbox" id="responsabilidad">
+          <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#0a3d73" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>
+          <span class="lbl">He leído y acepto las condiciones de participación y responsabilidad descritas anteriormente.</span>
+        </label>
+        <p class="err">Debes aceptar las condiciones de participación para registrarte.</p>
+      </div>
+
       <button class="btn" type="submit" id="enviar" style="margin-top:12px">ENVIAR REGISTRO</button>
       <div class="msg-gen" id="msgGen"></div>
     </form>
@@ -399,7 +422,9 @@ $('form').addEventListener('submit', async e => {
     marca('correo', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)),
     marca('telefono', tel === '' || /^9\d{8}$/.test(tel)),
     marca('bases', $('bases').checked),
-    marca('datos', $('datos').checked)
+    marca('datos', $('datos').checked),
+    marca('concurso', $('concurso').checked),
+    marca('responsabilidad', $('responsabilidad').checked)
   ];
   if (v.includes(false)){
     document.querySelector('.q.bad').scrollIntoView({behavior:'smooth', block:'center'});
@@ -410,7 +435,7 @@ $('form').addEventListener('submit', async e => {
   try {
     const res = await fetch(SCRIPT_URL, {
       method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({actividades:acts, nombre, rut, nacimiento:nac, correo, telefono:tel, bases:true, datos:true})
+      body: JSON.stringify({actividades:acts, nombre, rut, nacimiento:nac, correo, telefono:tel, bases:true, datos:true, concurso:true, responsabilidad:true})
     });
     const r = await res.json();
     if (r.status === 'ok'){
