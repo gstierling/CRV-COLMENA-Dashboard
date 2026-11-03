@@ -242,7 +242,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:16px}
     <form id="form" novalidate>
       <div class="q" data-f="actividades">
         <p class="t qt"><span class="num">1.</span>¿En qué va a participar? <span class="req">*</span></p>
-        <p class="help">Puedes escoger más de una opción</p>
+        <p class="help" id="actHelp">Puedes escoger más de una opción</p>
         <div class="checks" id="actividades"></div>
         <p class="err">Elige al menos una actividad.</p>
       </div>
@@ -367,6 +367,7 @@ function pintarActividades(){
   modoActs = todas;
   const marcadas = [...document.querySelectorAll('input[name=act]:checked')].map(i => i.value);
   const lista = todas ? ACTIVIDADES : ['Sorteo'];
+  $('actHelp').style.display = todas ? '' : 'none';   // el aviso solo tiene sentido con las 4 opciones
   $('actividades').innerHTML = lista.map(a =>
     `<label class="check"><input type="checkbox" name="act" value="${a}"${marcadas.includes(a) ? ' checked' : ''}><span class="box">${CHECK_SVG}</span><span class="lbl">${a}</span></label>`).join('');
   $('actividades').querySelectorAll('input').forEach(i => i.addEventListener('change', () => i.closest('.q').classList.remove('bad')));
