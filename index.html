@@ -352,8 +352,27 @@ const DIAS_L = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sáb
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
 // Actividades (selección múltiple)
-$('actividades').innerHTML = ACTIVIDADES.map((a,i) =>
-  `<label class="check"><input type="checkbox" name="act" value="${a}"><span class="box">${CHECK_SVG}</span><span class="lbl">${a}</span></label>`).join('');
+// Las 4 opciones solo se muestran los domingos de 9.00 a 14.00 hrs (hora de Chile); el resto del tiempo, solo "Sorteo"
+function horarioDomingo(){
+  const p = {};
+  new Intl.DateTimeFormat('en-US', { timeZone:'America/Santiago', weekday:'short', hour:'numeric', hour12:false })
+    .formatToParts(new Date()).forEach(x => p[x.type] = x.value);
+  const h = Number(p.hour) % 24;
+  return p.weekday === 'Sun' && h >= 9 && h < 14;
+}
+let modoActs = null;
+function pintarActividades(){
+  const todas = horarioDomingo();
+  if (todas === modoActs) return;
+  modoActs = todas;
+  const marcadas = [...document.querySelectorAll('input[name=act]:checked')].map(i => i.value);
+  const lista = todas ? ACTIVIDADES : ['Sorteo'];
+  $('actividades').innerHTML = lista.map(a =>
+    `<label class="check"><input type="checkbox" name="act" value="${a}"${marcadas.includes(a) ? ' checked' : ''}><span class="box">${CHECK_SVG}</span><span class="lbl">${a}</span></label>`).join('');
+  $('actividades').querySelectorAll('input').forEach(i => i.addEventListener('change', () => i.closest('.q').classList.remove('bad')));
+}
+pintarActividades();
+setInterval(pintarActividades, 30000);   // cambia sola al empezar o terminar el horario
 
 function dvRut(cuerpo){
   let s = 0, m = 2;
